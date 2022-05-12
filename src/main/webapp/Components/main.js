@@ -9,13 +9,20 @@ $(document).ready(function()
 
 $(document).on("click", "#btnfind", function(event)
 {
+	$("#alertSuccess").text("");
+	$("#alertSuccess").hide();
+	$("#alertError").text("");
+	$("#alertError").hide();
+	
+	
 	$("#alertSuccessfind").text("");
 	$("#alertSuccessfind").hide();
 	$("#alertErrorfind").text("");
 	$("#alertErrorfind").hide();
 	
 	// Form validation-------------------
-	var status = validateBasicInterrutionForm();    // need to edit
+	var status = validateBasicInterrutionForm();
+	console.log(status)    // need to edit
 	// If not valid
 	if (status != true)
 	{	
@@ -24,12 +31,12 @@ $(document).on("click", "#btnfind", function(event)
 		return;
 	}	
 	// If valid-----------------------
-	var type = ($("#hidItemIDSave").val() == "") ? "POST" : "PUT";
+	
 	$.ajax(
 	{
-	url : "FundAPI",
-	type : type,
-	data : $("#formItem").serialize(),
+	url : "InterruptionAPI",
+	type : "GET",
+	data : $("#frmFindInterruptions").serialize(),
 	dataType : "text",
 	complete : function(response, status)
 	{
@@ -37,17 +44,8 @@ $(document).on("click", "#btnfind", function(event)
 	}
 	});	
 	
- 	/*// Generate the card and append 
-	var interruptions = getInterruptionsCard($("#InterruptinArea").val().trim(),
- 	$("#InterruptionDate").val(),
- 	$("#InterruptionStartTime").val(),$("#InterruptionEndTime").val());
- 	$("#colInterruption").append(interruptions);
-
- 	$("#alertSuccess").text("Saved successfully.");
- 	$("#alertSuccess").show();
-
- 	$("#formStudent")[0].reset();
-	*/
+ 
+	
 });
 
 $(document).on("click", "#btnSave", function(event)
@@ -58,7 +56,8 @@ $(document).on("click", "#btnSave", function(event)
 	$("#alertError").hide();
 	
 	// Form validation-------------------
-	var status = validateItemForm();    // need to edit
+	console.log("In save");
+	var status = validateInterrutionForm();    // need to edit
 	// If not valid
 	if (status != true)
 	{	
@@ -67,45 +66,103 @@ $(document).on("click", "#btnSave", function(event)
 		return;
 	}	
 	// If valid-----------------------
+	var type = ($("#hidItemIDSave").val() == "") ? "POST" : "PUT";
+	$.ajax(
+	{
+	url : "InterruptionAPI",
+	type : type,
+	data : $("#frmInterruptions").serialize(),
+	dataType : "text",
+	complete : function(response, status)
+	{
+	onItemSaveComplete(response.responseText, status);
+	}
+	});	
 	
 	
-	
- 	// Generate the card and append
-	var interruptions = getInterruptionsCard($("#InterruptinArea").val().trim(),
- 	$("#InterruptionDate").val(),
- 	$("#InterruptionStartTime").val(),$("#InterruptionEndTime").val());
- 	$("#colInterruption").append(interruptions);
-
- 	$("#alertSuccess").text("Saved successfully.");
- 	$("#alertSuccess").show();
- 	
- 	$ajax
- 	
-
- 	$("#formStudent")[0].reset();
 	
 });
-
-$(document).on("click", ".remove", function(event)
+$(document).on("click", ".btnUpdate", function(event)
 {
-	$(this).closest(".student").remove();
-	$("#alertSuccess").text("Removed successfully.");
-	$("#alertSuccess").show();
+	
+	
+	$("#alertSuccess").text("");
+	$("#alertSuccess").hide();
+	$("#alertError").text("");
+	$("#alertError").hide();
+	$("#hidItemIDSave").val($(this).closest("tr").find('td:eq(0)').text());
+ 	$("#InterruptionDate").val($(this).closest("tr").find('td:eq(1)').text());
+ 	$("#InterruptionStartTime").val($(this).closest("tr").find('td:eq(2)').text());
+ 	$("#InterruptionEndTime").val($(this).closest("tr").find('td:eq(3)').text());
+ 	$("#InterruptinArea").val($(this).closest("tr").find('td:eq(4)').text());
+}); 
+
+$(document).on("click", ".btnRemove", function(event)
+{
+	$("#alertSuccess").text("");
+	$("#alertSuccess").hide();
+	$("#alertError").text("");
+	$("#alertError").hide();
+	
+ $.ajax(
+ {
+ url : "InterruptionAPI",
+ type : "DELETE",
+ data : "itemID=" + $(this).closest("tr").find('td:eq(0)').text(),
+ dataType : "text",
+ complete : function(response, status)
+ {
+ onItemDeleteComplete(response.responseText, status);
+ }
+ });
 });
+
+
 
 
 //client model
+
+function onItemSaveComplete(response, status)
+{
+	if (status == "success")
+	{
+	var resultSet = JSON.parse(response);
+	if (resultSet.status.trim() == "success")
+	{
+	$("#alertSuccess").text("Successfully saved.");
+	$("#alertSuccess").show();
+	$("#divItemsGrid").html(resultSet.data);
+	} else if (resultSet.status.trim() == "error")
+	{
+	$("#alertError").text(resultSet.data);
+	$("#alertError").show();
+	}
+	} else if (status == "error")
+	{
+	$("#alertError").text("Error while saving.");
+	$("#alertError").show();
+	} else
+	{
+	$("#alertError").text("Unknown error while saving..");
+	$("#alertError").show();
+	}
+	$("#hidItemIDSave").val("");
+	$("#InterruptinAreafind").val($("#InterruptinArea").val());
+	$("#InterruptionDatefind").val($("#InterruptionDate").val());
+	$("#frmInterruptions")[0].reset();
+}
+
 function validateBasicInterrutionForm()
 {
  	// NAME
-	if ($("#InterruptinArea").val().trim() == "")
+	if ($("#InterruptinAreafind").val().trim() == "")
 	{
 		return "Select A Area";
 	}
 	
 	
 	// date
-	if ($("#InterruptionDate").val()=="")
+	if ($("#InterruptionDatefind").val()=="")
 	{
 		return "Select a date";
 	}
@@ -147,27 +204,32 @@ function validateInterrutionForm()
  	return true;
 }
 
-function getInterruptionsCard(area, date, startTime,endTime)
-{	
-	var student = "";
-	student += "<div class=\"interruption card bg-light m-2\" style=\"max-width: 10rem;float: left;\">";
-	student += "<div class=\"card-body\">";
-	student +=  area + ",";
-	student += "<br>";
-	student +=  date + ",";
-	student += "<br>";
-	student +=  startTime + " to ";
-	student += "<br>";
-	student += endTime;
-	student += "</div>";
-	student += "<input type=\"button\" value=\"Remove\"class=\"btn btn-danger remove\">";
-	student += "</div>";
-
-
- 	
- 	
-	return student;
+function onItemDeleteComplete(response, status)
+{
+if (status == "success")
+ {
+ var resultSet = JSON.parse(response);
+ if (resultSet.status.trim() == "success")
+ {
+ $("#alertSuccess").text("Successfully deleted.");
+ $("#alertSuccess").show();
+ $("#divItemsGrid").html(resultSet.data);
+ } else if (resultSet.status.trim() == "error")
+ {
+ $("#alertError").text(resultSet.data);
+ $("#alertError").show();
+ }
+ } else if (status == "error")
+ {
+ $("#alertError").text("Error while deleting.");
+ $("#alertError").show();
+ } else
+ {
+ $("#alertError").text("Unknown error while deleting..");
+ $("#alertError").show();
+ }
 }
+
 
 
 

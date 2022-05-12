@@ -37,11 +37,13 @@ public class Interruptions {
 			preparedStmt.execute();
 			
 			con.close();
-			output = "Inserted successfully";
+			
+			String InterruptionsList = this.InterruptionsOfTheArea(areaID,date);
+			output =  InterruptionsList;
 			
 			
 		}catch(Exception e) {
-			output = "Error while inserting the interruption";
+			output = "{\"status\":\"error\", \"data\":\"Error while inserting the interruption details.\"}"; 
 			System.err.println(e.getMessage());
 		}
 		
@@ -64,6 +66,7 @@ public class Interruptions {
 			 String query = "UPDATE `electronicgriddb`.`interruption` SET `date` = ?, `startTIme` = ?, `endTime` = ?, `areaID` = ? WHERE (`interruptionID` = ?);";
 			 PreparedStatement preparedStmt = con.prepareStatement(query);
 			 // binding values
+			 System.out.println(startTime);
 			 preparedStmt.setString(1, date);
 			 preparedStmt.setString(2, startTime);
 			 preparedStmt.setString(3, endTime);
@@ -72,11 +75,12 @@ public class Interruptions {
         	// execute the statement
 			 preparedStmt.execute();
 			 con.close();
-			 output = "Updated Successfully";
+			 String InterruptionsList = this.InterruptionsOfTheArea(areaID,date);
+			output =  InterruptionsList;
 		 }
 		 catch (Exception e)
 		 {
-			 output = "Error while updating the interruption.";
+			 output = "{\"status\":\"error\", \"data\":\"Error while updating the interrupitons.\"}";
 			 System.err.println(e.getMessage());
 		 }
 		 return output; 
@@ -94,21 +98,47 @@ public class Interruptions {
 			 Connection con = db.getConnection();
 			 if (con == null)
 			 {return "Error while connecting to the database for deleting."; }
+			 
+			 String query = "select * from `interruption` where `interruptionID`='"+interruptionID+"'";
+				
+				
+				Statement stmt = con.createStatement();
+				ResultSet rs = stmt.executeQuery(query);
+				 // execute the statement
+				
+				
+				// iterate through the rows in the result set
+				
+				while (rs.next())
+				{	
+					interruptionID = Integer.toString(rs.getInt("interruptionID"));
+					date = rs.getString("date");
+					startTime = rs.getString("startTime");
+					endTime = rs.getString("endTime");
+					areaID = rs.getString("areaID");
+				
+					
+					
+					
+				}
+				
+			 
 			 // create a prepared statement
-			 String query = "delete from `interruption` where `interruptionID`=?";
+			 String query2 = "delete from `interruption` where `interruptionID`=?";
 			 
 			
-			 PreparedStatement preparedStmt = con.prepareStatement(query);
+			 PreparedStatement preparedStmt = con.prepareStatement(query2);
 			 // binding values
 			 preparedStmt.setString(1, interruptionID);
 			 // execute the statement
 			 preparedStmt.execute();
 			 con.close();
-			 output = "Deleted successfully";
+			 String InterruptionsList = this.InterruptionsOfTheArea(areaID,date);
+			output =  InterruptionsList;
 		 }
 		 catch (Exception e)
 		 {
-			 output = "Error while deleting the interruption";
+			 output = "{\"status\":\"error\", \"data\":\"Error while deleting the interruption.\"}";
 			 System.err.println(e.getMessage());
 		 }
 		 return output; 
@@ -127,7 +157,16 @@ public class Interruptions {
 			if (con == null)
 			{return "Error while connecting to the database for reading."; }
 			// Prepare the html table to be displayed
-			output = "{ data:[";
+			output = "<table width='100%' border='1' style='margin-top:50px'/>"+
+					"<tr>"+
+					"<th>Interruption ID</th>"+
+					"<th>Date</th>" +
+					"<th>Start Time</th>" +
+					"<th>End Time</th>" +
+					"<th>Area ID</th>"+
+					"<th>Update</th>"+
+					"<th>Delete</th>"+
+					"</tr>";
 
 			String query = "select * from `interruption` where `areaID`='"+InareaID+"' and `date`='"+InDate+"'";
 			
@@ -138,38 +177,43 @@ public class Interruptions {
 			
 			
 			// iterate through the rows in the result set
-			boolean current = rs.next();
-			while (current)
+			
+			while (rs.next())
 			{	
 				interruptionID = Integer.toString(rs.getInt("interruptionID"));
 				date = rs.getString("date");
 				startTime = rs.getString("startTime");
 				endTime = rs.getString("endTime");
 				areaID = rs.getString("areaID");
-				// Add into the html table
-			    
-				output += "{\"InterruptionID\":\""+interruptionID+"\",";
-				output += "\"date\":\""+date+"\",";
-				output += "\"startTime\":\""+startTime+"\",";
-				output += "\"endTime\":\""+endTime+"\",";
-				output += "\"areaID\":\""+areaID+"\"}";
+			
 				
-				current = rs.next();
-				if (!current) {
-					continue;
-				}
-				output += ",";
+				 
+				
+				
+				// Add into the html table
+				output += "<tr><td>" + interruptionID + "</td>";
+				output += "<td>" + date + "</td>";
+				output += "<td>" + startTime + "</td>";
+				output += "<td>" + endTime + "</td>";
+				output += "<td>" + areaID + "</td>";
+				
+				// buttons
+				output += "<td><input name='btnUpdate' type='button' value='Update' class='btnUpdate btn btn-secondary' data-intID='" + interruptionID + "'></td>"
+	            		+ "<td><input name = 'btnRemove' type='button' value = 'Remove' "
+	            		+ "class = 'btnRemove btn btn-danger' data-intID='" + interruptionID + "'>"
+	            		+"</td></tr>";
 			}
 			con.close();
 			// Complete the html table
-			output += "]}";
+			output += "</table>";
 		}
 		catch (Exception e)
 		{
-			output = "Error while reading the items.";
+			output = "{\"status\":\"error\", \"data\":\"Error while reading the interruptions details.\"}"; ;
 			System.err.println(e.getMessage());
 		}	
-		return output;
+		return "{\"status\":\"success\", \"data\": \"" + 
+		output + "\"}";
 	 }
 	
 	public String viewNotifications(String InaccountNo) {
