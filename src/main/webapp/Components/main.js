@@ -184,10 +184,16 @@ function onItemSaveComplete(response, status)
 
 function validateBasicInterrutionForm()
 {
- 	// NAME
+ 	// area
 	if ($("#InterruptinAreafind").val().trim() == "")
 	{
 		return "Select A Area";
+	}
+	
+	//area numeric check
+	if (!$.isNumeric($("#InterruptinArea").val().trim()))
+	{
+		return "area should ID should be numeric!";
 	}
 	
 	
@@ -210,6 +216,7 @@ function validateInterrutionForm()
 		return "Select A Area";
 	}
 	
+	//numeric check
 	if (!$.isNumeric($("#InterruptinArea").val().trim()))
 	{
 		return "area should ID should be numeric!";
@@ -231,6 +238,11 @@ function validateInterrutionForm()
 	if ($("#InterruptionEndTime").val()=="")
 	{
 		return "Select a end time";
+	}
+	
+	if ($("#InterruptionEndTime").val()< $("#InterruptionStartTime").val())
+	{
+		return "start time cannot be after the end time";
 	}
 
 
