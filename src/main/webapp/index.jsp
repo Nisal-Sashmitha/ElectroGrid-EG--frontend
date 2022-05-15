@@ -46,8 +46,7 @@
                             <label>End Time</label>
                             <input type="time" id="InterruptionEndTime" name="InterruptionEndTime" class="form-control" placeholder="Fee" size="30px" required>
                         </div>
-                        <div id="alertSuccess" class="alert alert-success"></div>
-						<div id="alertError" class="alert alert-danger"></div>
+                        
                          <div class="form-group" align="right">
                              <input type="button" id="btnSave" value="Save" class="btn btn-info" />
                              <input type="hidden" id="hidItemIDSave" name="hidItemIDSave" value="">
@@ -100,7 +99,11 @@
                 </div>
             </div>
         </div>
-
+		<div class="row d-flex justify-content-center">
+						<div id="alertSuccess" class="alert alert-success"></div>
+						<div id="alertError" class="alert alert-danger"></div>
+			
+		</div>
 
 
 

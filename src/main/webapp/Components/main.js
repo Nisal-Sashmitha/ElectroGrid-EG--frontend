@@ -40,7 +40,7 @@ $(document).on("click", "#btnfind", function(event)
 	dataType : "text",
 	complete : function(response, status)
 	{
-	onItemSaveComplete(response.responseText, status);
+	onItemFindComplete(response.responseText, status);
 	}
 	});	
 	
@@ -120,7 +120,37 @@ $(document).on("click", ".btnRemove", function(event)
 
 
 
-//client model
+//client model---------------------------------------------------------
+
+function onItemFindComplete(response, status)
+{
+	if (status == "success")
+	{
+	var resultSet = JSON.parse(response);
+	if (resultSet.status.trim() == "success")
+	{
+	$("#alertSuccessfind").text("Search finished successfully.");
+	$("#alertSuccessfind").show();
+	$("#divItemsGrid").html(resultSet.data);
+	} else if (resultSet.status.trim() == "error")
+	{
+	$("#alertError").text(resultSet.data);
+	$("#alertError").show();
+	}
+	} else if (status == "error")
+	{
+	$("#alertError").text("Error while searching.");
+	$("#alertError").show();
+	} else
+	{
+	$("#alertError").text("Unknown error while searching..");
+	$("#alertError").show();
+	}
+	$("#hidItemIDSave").val("");
+	$("#InterruptinAreafind").val($("#InterruptinArea").val());
+	$("#InterruptionDatefind").val($("#InterruptionDate").val());
+	$("#frmInterruptions")[0].reset();
+}
 
 function onItemSaveComplete(response, status)
 {
@@ -174,14 +204,18 @@ function validateBasicInterrutionForm()
 
 function validateInterrutionForm()
 {
- 	// NAME
+ 	// areaID
 	if ($("#InterruptinArea").val().trim() == "")
 	{
 		return "Select A Area";
 	}
 	
+	if (!$.isNumeric($("#InterruptinArea").val().trim()))
+	{
+		return "area should ID should be numeric!";
+	}
 	
-	// date
+	// areaid numeric
 	if ($("#InterruptionDate").val()=="")
 	{
 		return "Select a date";
